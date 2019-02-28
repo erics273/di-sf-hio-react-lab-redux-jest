@@ -13,27 +13,18 @@ class Jeopardy extends Component {
     constructor(props) {
         super(props);
         this.client = new JeopardyService();
-        this.state = {
-            questionData: {},
-            categories: [],
-            score: 0
-        }
     }
 
     getQuestion = (category) => {
         return this.client.getQuestion(category).then(result => {
-            this.setState({
-                questionData: result.data[0]
-            })
-            console.log(this.state.questionData.answer)
+            this.props.updateQuestion(result.data[0])
+            console.log(result.data[0].answer)
         })
     }
 
     getCategories = () => {
         return this.client.getCategories(3).then(result => {
-            this.setState({
-                categories: result.data
-            })
+            this.props.updateCategories(result.data)
         })
     }
 
@@ -47,29 +38,23 @@ class Jeopardy extends Component {
         this.getCategories()
 
         const userAnswer = event.target.answer.value
-        if (userAnswer === this.state.questionData.answer) {
-            this.setState((state, props) => ({
-                score: state.score + state.questionData.value,
-                questionData: {}
-            }));
+        if (userAnswer === this.props.questionData.answer) {
+            this.props.updateScore(this.props.score + this.props.questionData.value)
         } else {
-            this.setState((state, props) => ({
-                score: state.score - state.questionData.value,
-                questionData: {}
-            }));
+            this.props.updateScore(this.props.score - this.props.questionData.value)
         }
         event.target.answer.value = "";
     }
 
     render() {
 
-        if(_.isEmpty(this.state.questionData)){
-            return  <Categories clickHandler={this.getQuestion} categories={this.state.categories} />
+        if(_.isEmpty(this.props.questionData)){
+            return  <Categories clickHandler={this.getQuestion} categories={this.props.categories} />
         }
 
         return (
             <div>
-                <GameBoard scoreGame={this.checkAnswer} questionData={this.state.questionData} score={this.state.score} />
+                <GameBoard scoreGame={this.checkAnswer} questionData={this.props.questionData} score={this.props.score} />
             </div>
         );        
     }
